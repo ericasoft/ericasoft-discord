@@ -1,0 +1,35 @@
+services:
+  configserver:
+    image: hyness/spring-cloud-config-server:latest
+    container_name: discord-bots-configserver
+    networks:
+     - discord-bots
+    ports:
+     - "6969:6969"
+    volumes:
+     - ./configserver:/config
+    environment:
+      JAVA_OPTS: "-Dspring.profiles.active=native -Dspring.cloud.config.server.native.searchLocations=file:/config -Dserver.port=6969"
+  postgres:
+    image: postgres:latest
+    container_name: discord-bots-postgres
+    networks:
+     - discord-bots
+    ports:
+     - "5432:5432"
+    environment:
+     - POSTGRES_USER=admin
+     - POSTGRES_PASSWORD=admin
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: discord-bots-pgadmin
+    networks:
+     - discord-bots
+    ports:
+     - "2345:80"
+    environment:
+     - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+     - PGADMIN_DEFAULT_PASSWORD=admin
+     
+networks:
+  discord-bots:
