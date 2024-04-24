@@ -24,10 +24,18 @@
     <properties>
         <java.version>22</java.version>
         <discord4j-core.version>3.2.6</discord4j-core.version>
+        <spring-cloud-dependencies.version>2023.0.1</spring-cloud-dependencies.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.discord4j</groupId>
                 <artifactId>discord4j-core</artifactId>
