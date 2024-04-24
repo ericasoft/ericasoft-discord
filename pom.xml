@@ -29,6 +29,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.discord4j</groupId>
+                <artifactId>discord4j-core</artifactId>
+                <version>${discord4j-core.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.austinv11.servicer</groupId>
+                        <artifactId>Servicer</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.ericasoft</groupId>
                 <artifactId>ericasoft-discord-common-3p</artifactId>
                 <version>${project.version}</version>
