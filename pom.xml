@@ -18,7 +18,7 @@
         <module>ericasoft-discord-common-3p</module>
         <module>ericasoft-discord-bot</module>
         <module>ericasoft-discord-server</module>
-        <module>ericasoft-discord-db</module>
+        <module>ericasoft-discord-postgres</module>
         <module>ericasoft-discord-vchelper</module>
     </modules>
     <properties>
@@ -51,7 +51,7 @@
             </dependency>
             <dependency>
                 <groupId>org.ericasoft</groupId>
-                <artifactId>ericasoft-discord-db</artifactId>
+                <artifactId>ericasoft-discord-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
