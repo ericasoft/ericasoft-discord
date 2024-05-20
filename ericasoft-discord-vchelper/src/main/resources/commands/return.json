@@ -1,0 +1,12 @@
+{
+  "name": "return",
+  "description": "Returns the specified role from the broadcast to the lobby",
+  "options": [
+    {
+      "name": "role",
+      "description": "The role that shall be returned from the broadcast channel.",
+      "type": 8,
+      "required": true
+    }
+  ]
+}

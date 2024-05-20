@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 @Log4j2
 @AutoConfigureAfter({BotService.class, VoiceChannelConfigurationService.class})
 @Getter
-public class VoiceChannelPullService extends VoiceChannelMoveService {
+public class VoiceChannelReturnService extends VoiceChannelMoveService {
 
     @Autowired
-    public VoiceChannelPullService(BotService botService, VoiceChannelConfigurationService configService) {
+    public VoiceChannelReturnService(BotService botService, VoiceChannelConfigurationService configService) {
         super(botService, configService);
     }
 
@@ -35,7 +35,7 @@ public class VoiceChannelPullService extends VoiceChannelMoveService {
     public void init() {
         getBotService().registerChatInputInteractionEventListener(
             ChatInputInteractionEvent.class,
-            "pull",
+            "return",
             this::handlePullCommand);
     }
 
@@ -53,21 +53,21 @@ public class VoiceChannelPullService extends VoiceChannelMoveService {
         Snowflake roleId = extractRole(event);
 
         log.debug("Found role [{}]", roleId.asLong());
-        log.debug("Looking for lobby");
+        log.debug("Looking for broadcast");
 
-        VoiceChannel lobby = findVoiceChannel(serverId, Snowflake.of(config.get().getLobbyChannelId()));
+        VoiceChannel broadcast = findVoiceChannel(serverId, Snowflake.of(config.get().getBroadcastChannelId()));
 
-        if (lobby == null) {
-            event.reply("Could not find lobby").block();
+        if (broadcast == null) {
+            event.reply("Could not find broadcast").block();
             return Mono.empty();
         }
 
-        log.info("Found lobby [{}] with id [{}]", lobby.getName(), lobby.getId().asLong());
+        log.info("Found broadcast [{}] with id [{}]", broadcast.getName(), broadcast.getId().asLong());
         log.debug("Looking for guild members");
-        List<Member> guildMembers = findVoiceUsers(event, lobby);
+        List<Member> guildMembers = findVoiceUsers(event, broadcast);
 
         if (guildMembers == null) {
-            event.reply("Could not find voice users in lobby").block();
+            event.reply("Could not find voice users in broadcast").block();
             return Mono.empty();
         }
 
@@ -78,7 +78,7 @@ public class VoiceChannelPullService extends VoiceChannelMoveService {
         guildMembers = filterGuildMembers(guildMembers, roleId);
 
         if (guildMembers.isEmpty()) {
-            event.reply("All voice users in lobby were filtered out").block();
+            event.reply("All voice users in broadcast were filtered out").block();
             return Mono.empty();
         }
 
@@ -88,13 +88,13 @@ public class VoiceChannelPullService extends VoiceChannelMoveService {
             filteredNames);
 
         log.debug("Attempting to move guild members to broadcast channel");
-        Possible<Optional<Snowflake>> possibleBroadcastChannel = Possible.of(
+        Possible<Optional<Snowflake>> possibleLobbyChannel = Possible.of(
             Optional.of(
                 Snowflake.of(
-                    config.get().getBroadcastChannelId())));
-        moveGuildMembersToVoiceChannel(guildMembers, possibleBroadcastChannel);
+                    config.get().getLobbyChannelId())));
+        moveGuildMembersToVoiceChannel(guildMembers, possibleLobbyChannel);
 
-        event.reply(String.format("Moved users [%s] to broadcast!", filteredNames)).block();
+        event.reply(String.format("Return users [%s] to lobby!", filteredNames)).block();
         return Mono.empty();
     }
 }
