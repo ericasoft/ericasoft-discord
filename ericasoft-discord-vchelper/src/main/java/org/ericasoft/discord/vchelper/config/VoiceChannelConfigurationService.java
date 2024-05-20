@@ -15,6 +15,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -29,21 +31,17 @@ public class VoiceChannelConfigurationService {
 
     @PostConstruct
     public void init() {
-        botService.registerEventListener(
+        botService.registerChatInputInteractionEventListener(
             ChatInputInteractionEvent.class,
-            event ->
-            {
-                log.info("Command [{}] received", event.getCommandName());
-                if (event.getCommandName().equalsIgnoreCase("config")) {
-                    handleConfigCommand(event);
-                }
-
-                log.info("Finished processed command [{}]", event.getCommandName());
-                return Mono.empty();
-            });
+            "config",
+            this::handleConfigCommand);
     }
 
-    private void handleConfigCommand(ChatInputInteractionEvent event) {
+    public Optional<VoiceChannelConfiguration> getConfiguration(long serverId) {
+        return voiceChannelRepository.findById(serverId);
+    }
+
+    private Mono<Void> handleConfigCommand(ChatInputInteractionEvent event) {
         VoiceChannelConfiguration.VoiceChannelConfigurationBuilder configBuilder = VoiceChannelConfiguration
             .builder();
         event.getOptions().forEach(option ->
@@ -71,7 +69,9 @@ public class VoiceChannelConfigurationService {
 
         configBuilder.serverId(event.getInteraction().getGuildId().orElseThrow().asLong());
         voiceChannelRepository.save(configBuilder.build());
-        event.reply("Configuration has been saved!");
+        event.reply("Configuration has been saved!").block();
+
+        return Mono.empty();
     }
 
 }

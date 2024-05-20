@@ -1,0 +1,12 @@
+{
+  "name": "pull",
+  "description": "Pulls the specified role from the lobby to broadcast",
+  "options": [
+    {
+      "name": "role",
+      "description": "The role that shall be pulled into the broadcast channel.",
+      "type": 8,
+      "required": true
+    }
+  ]
+}
