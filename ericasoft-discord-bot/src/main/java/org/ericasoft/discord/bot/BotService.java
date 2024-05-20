@@ -4,6 +4,7 @@ import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 @EnableConfigurationProperties(DiscordProperties.class)
 public class BotService {
     private final DiscordProperties properties;
+    @Getter
     private GatewayDiscordClient client;
 
     @PostConstruct

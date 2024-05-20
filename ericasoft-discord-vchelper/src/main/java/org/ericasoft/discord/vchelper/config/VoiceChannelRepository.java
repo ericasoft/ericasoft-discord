@@ -1,4 +1,4 @@
-package org.ericasoft.discord.vchelper;
+package org.ericasoft.discord.vchelper.config;
 
 
 import jakarta.validation.constraints.NotNull;
