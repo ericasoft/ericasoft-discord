@@ -70,6 +70,52 @@
         </dependencies>
     </dependencyManagement>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.43.4</version>
+                    <configuration>
+                        <verbose>true</verbose>
+                        <removeAll>false</removeAll>
+                        <skipDockerInfo>true</skipDockerInfo>
+                        <images>
+                            <image>
+                                <alias>ericasoft/${project.name}</alias>
+                                <name>ericasoft/${project.name}:${project.version}</name>
+                                <build>
+                                    <dockerFile>${project.basedir}/Dockerfile</dockerFile>
+                                    <nocache>true</nocache>
+                                    <cleanup>try</cleanup>
+                                    <tags>
+                                        <tag>latest</tag>
+                                    </tags>
+                                    <args>
+                                        <app_jar>${project.name}-${project.version}.jar</app_jar>
+                                    </args>
+                                </build>
+                            </image>
+                        </images>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>build-docker-image</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>build</goal>
+                            </goals>
+                            <configuration>
+                                <registry>registry.hub.docker.com/library</registry>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
     <repositories>
         <repository>
             <id>spring-milestones</id>
