@@ -87,7 +87,7 @@
                                 <name>ericasoft/${project.name}:${project.version}</name>
                                 <build>
                                     <dockerFile>${project.basedir}/Dockerfile</dockerFile>
-                                    <nocache>true</nocache>
+                                    <nocache>false</nocache>
                                     <cleanup>try</cleanup>
                                     <tags>
                                         <tag>latest</tag>

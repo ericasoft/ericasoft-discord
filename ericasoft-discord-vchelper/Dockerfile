@@ -1,6 +1,5 @@
-ARG app_jar
 FROM registry.hub.docker.com/library/eclipse-temurin:22-jre
-
+ARG app_jar
 RUN apt-get --assume-yes update --fix-missing && \
     apt-get --assume-yes upgrade --fix-missing && \
     apt-get --assume-yes install curl && \
@@ -12,7 +11,7 @@ ARG APP_HOME=/srv
 
 RUN adduser --home ${APP_HOME} --shell /bin/bash --disabled-password --gecos "" --uid 1001 ${USER}
 
-COPY /target/${app_jar} ${APP_HOME}/${app_jar}
+COPY /target/${app_jar} ${APP_HOME}/application.jar
 COPY /target/classes/entrypoint.sh ${APP_HOME}/entrypoint.sh
 
 RUN chmod 555 ${APP_HOME}/entrypoint.sh
@@ -22,4 +21,4 @@ USER ${USER}
 WORKDIR ${APP_HOME}
 EXPOSE 42069
 
-ENTRYPOINT ["./entrypoint.sh","${app_jar}"]
+ENTRYPOINT ["/srv/entrypoint.sh", "application.jar"]

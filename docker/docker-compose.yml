@@ -9,7 +9,7 @@ services:
     volumes:
      - ./configserver:/config
     environment:
-      JAVA_OPTS: "-Dspring.profiles.active=native -Dspring.cloud.config.server.native.searchLocations=file:/config -Dserver.port=6969"
+     JAVA_OPTS: "-Dspring.profiles.active=native -Dspring.cloud.config.server.native.searchLocations=file:/config -Dserver.port=6969 -Dserver.ssl.enabled=false"
   postgres:
     image: postgres:latest
     container_name: discord-bots-postgres
@@ -20,16 +20,34 @@ services:
     environment:
      - POSTGRES_USER=admin
      - POSTGRES_PASSWORD=admin
+    healthcheck:
+     test: [ "CMD-SHELL", "pg_isready" ]
+     interval: 30s
+     timeout: 60s
+     retries: 5
+     start_period: 30s
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: discord-bots-pgadmin
     networks:
      - discord-bots
+    depends_on:
+     postgres:
+      condition: service_healthy
     ports:
      - "2345:80"
     environment:
      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
      - PGADMIN_DEFAULT_PASSWORD=admin
-     
+  vchelper:
+    image: ericasoft/ericasoft-discord-vchelper:latest
+    container_name: discord-bots-vchelper
+    depends_on:
+     postgres:
+      condition: service_healthy
+    networks:
+     - discord-bots
+    ports:
+     - 42069:42069
 networks:
   discord-bots:
