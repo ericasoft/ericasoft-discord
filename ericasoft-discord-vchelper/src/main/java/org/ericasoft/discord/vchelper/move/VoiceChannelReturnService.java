@@ -64,7 +64,7 @@ public class VoiceChannelReturnService extends VoiceChannelMoveService {
 
         log.info("Found broadcast [{}] with id [{}]", broadcast.getName(), broadcast.getId().asLong());
         log.debug("Looking for guild members");
-        List<Member> guildMembers = findVoiceUsers(event, broadcast);
+        List<Member> guildMembers = findVoiceUsers(broadcast, findGuildUsers(broadcast.getGuildId()));
 
         if (guildMembers == null) {
             event.reply("Could not find voice users in broadcast").block();

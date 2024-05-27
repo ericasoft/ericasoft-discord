@@ -64,7 +64,7 @@ public class VoiceChannelPullService extends VoiceChannelMoveService {
 
         log.info("Found lobby [{}] with id [{}]", lobby.getName(), lobby.getId().asLong());
         log.debug("Looking for guild members");
-        List<Member> guildMembers = findVoiceUsers(event, lobby);
+        List<Member> guildMembers = findVoiceUsers(lobby, findGuildUsers(lobby.getGuildId()));
 
         if (guildMembers == null) {
             event.reply("Could not find voice users in lobby").block();

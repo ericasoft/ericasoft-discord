@@ -3,16 +3,25 @@ package org.ericasoft.discord.bot;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
+import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.shard.GatewayBootstrap;
+import discord4j.gateway.GatewayOptions;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -22,15 +31,52 @@ public class BotService {
     private final DiscordProperties properties;
     @Getter
     private GatewayDiscordClient client;
+    private IntentSet intents;
+
+    @Autowired(required = false)
+    public void setIntents(IntentSet intents) {
+        this.intents = intents;
+    }
 
     @PostConstruct
     public void init() {
-        client = DiscordClientBuilder
+        GatewayBootstrap<GatewayOptions> bootstrap = DiscordClientBuilder
             .create(properties.getToken())
             .build()
-            .gateway()
+            .gateway();
+
+        if (intents != null) {
+            log.info(
+                "Creating client with intents [{}]",
+                intents.stream().map(Intent::name).collect(Collectors.joining(", ")));
+            bootstrap.setEnabledIntents(intents);
+        }
+
+        client = bootstrap
             .login()
             .block();
+
+        if (client == null) {
+            throw new BeanCreationException("Discord client could not be created");
+        }
+
+        if (intents.contains(Intent.GUILD_MEMBERS)) {
+            initializeGuildMemberCache();
+        }
+    }
+
+    private void initializeGuildMemberCache() {
+        client
+            .getGuilds()
+            .flatMap(guild -> client.requestMembers(guild.getId()))
+            .collectList()
+            .block();
+
+        client
+            .on(GuildCreateEvent.class)
+            .flatMap(event -> client.requestMembers(event.getGuild().getId()))
+            .collectList()
+            .subscribe();
     }
 
     public <T extends Event> void registerEventListener(

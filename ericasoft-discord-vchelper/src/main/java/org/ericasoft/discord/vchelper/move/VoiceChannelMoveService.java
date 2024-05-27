@@ -8,6 +8,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Role;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.discordjson.possible.Possible;
@@ -19,14 +20,15 @@ import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
 public abstract class VoiceChannelMoveService {
 
-    private final BotService botService;
+    protected final BotService botService;
     private final VoiceChannelConfigurationService configService;
 
     protected static Snowflake extractRole(ChatInputInteractionEvent event) {
@@ -38,10 +40,26 @@ public abstract class VoiceChannelMoveService {
             .orElseThrow();
     }
 
-    protected static List<Member> findVoiceUsers(ChatInputInteractionEvent event, VoiceChannel voiceChannel) {
+    protected Map<Snowflake, Member> findGuildUsers(Snowflake guildId) {
+        return Optional.ofNullable(botService
+            .getClient()
+            .getGuildMembers(guildId)
+            .collectList()
+            .block())
+            .orElseGet(List::of)
+            .stream()
+            .collect(Collectors.toMap(
+                User::getId,
+                Function.identity()));
+    }
+
+    protected static List<Member> findVoiceUsers(
+            VoiceChannel voiceChannel,
+            Map<Snowflake, Member> members) {
         return voiceChannel.getVoiceStates()
             .flatMap(VoiceState::getUser)
-            .flatMap(user -> event.getInteraction().getGuild().flatMap(guild -> guild.getMemberById(user.getId())))
+            .map(user -> members.get(user.getId()))
+            .filter(Objects::nonNull)
             .collectList()
             .block();
     }
