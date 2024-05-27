@@ -6,12 +6,14 @@
       "name": "lobby",
       "description": "This is the channel that the users will be moved back to.",
       "type": 7,
+      "channel_types": [ 2 ],
       "required": true
     },
     {
       "name": "broadcast",
       "description": "This is the active broadcast channel that users will be moved to.",
       "type": 7,
+      "channel_types": [ 2 ],
       "required": true
     }
   ]

@@ -45,11 +45,8 @@ public class GlobalCommandRegistrar implements ApplicationRunner {
             commands.add(request);
         }
 
-        /* Bulk overwrite commands. This is now idempotent, so it is safe to use this even when only 1 command
-        is changed/added/removed
-        */
         applicationService.bulkOverwriteGlobalApplicationCommand(applicationId, commands)
-            .doOnNext(ignore -> log.debug("Successfully registered Global Commands"))
+            .doOnNext(command -> log.info("Successfully registered global commands [{}]", command.name()))
             .doOnError(e -> log.error("Failed to register global commands", e))
             .subscribe();
     }

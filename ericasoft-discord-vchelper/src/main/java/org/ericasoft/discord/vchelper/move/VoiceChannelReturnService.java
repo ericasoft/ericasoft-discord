@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @AutoConfigureAfter({BotService.class, VoiceChannelConfigurationService.class})
 @Getter
-public class VoiceChannelReturnService extends VoiceChannelMoveService {
+public class VoiceChannelReturnService extends AbstractVoiceChannelMoveService {
 
     @Autowired
     public VoiceChannelReturnService(BotService botService, VoiceChannelConfigurationService configService) {

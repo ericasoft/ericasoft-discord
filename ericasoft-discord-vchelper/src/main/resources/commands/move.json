@@ -1,0 +1,26 @@
+{
+  "name": "move",
+  "description": "Pulls the specified role from the lobby to broadcast",
+  "options": [
+    {
+      "name": "role",
+      "description": "The role that shall be pulled into the broadcast channel.",
+      "type": 8,
+      "required": true
+    },
+    {
+      "name": "to",
+      "description": "This is the channel that users will be moved to.",
+      "type": 7,
+      "channel_types": [ 2 ],
+      "required": true
+    },
+    {
+      "name": "from",
+      "description": "Optional argument to limit the channels that users are moved from.",
+      "type": 7,
+      "channel_types": [ 2 ],
+      "required": false
+    }
+  ]
+}

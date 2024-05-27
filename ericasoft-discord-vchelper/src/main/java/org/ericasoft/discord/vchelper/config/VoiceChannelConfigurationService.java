@@ -1,9 +1,11 @@
 package org.ericasoft.discord.vchelper.config;
 
-import discord4j.common.util.Snowflake;
+import static org.ericasoft.discord.vchelper.config.VoiceChannelConfiguration.*;
+
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
-import discord4j.core.object.entity.Entity;
+import discord4j.core.object.entity.channel.Channel;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -42,30 +44,24 @@ public class VoiceChannelConfigurationService {
     }
 
     private Mono<Void> handleConfigCommand(ChatInputInteractionEvent event) {
-        VoiceChannelConfiguration.VoiceChannelConfigurationBuilder configBuilder = VoiceChannelConfiguration
-            .builder();
-        event.getOptions().forEach(option ->
-        {
-            if (option.getName().equalsIgnoreCase("lobby")) {
-                configBuilder.lobbyChannelId(option
-                    .getValue()
-                    .map(ApplicationCommandInteractionOptionValue::asChannel)
-                    .flatMap(Mono::blockOptional)
-                    .map(Entity::getId)
-                    .map(Snowflake::asLong)
-                    .orElseThrow());
-            }
+        VoiceChannelConfigurationBuilder configBuilder = VoiceChannelConfiguration.builder();
+        Channel lobby = event
+            .getOption("lobby")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asChannel)
+            .flatMap(Mono::blockOptional)
+            .orElseThrow();
 
-            if (option.getName().equalsIgnoreCase("broadcast")) {
-                configBuilder.broadcastChannelId(option
-                    .getValue()
-                    .map(ApplicationCommandInteractionOptionValue::asChannel)
-                    .flatMap(Mono::blockOptional)
-                    .map(Entity::getId)
-                    .map(Snowflake::asLong)
-                    .orElseThrow());
-            }
-        });
+        Channel broadcast = event
+            .getOption("broadcast")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asChannel)
+            .flatMap(Mono::blockOptional)
+            .orElseThrow();
+
+
+        configBuilder.lobbyChannelId(lobby.getId().asLong());
+        configBuilder.broadcastChannelId(broadcast.getId().asLong());
 
         configBuilder.serverId(event.getInteraction().getGuildId().orElseThrow().asLong());
         voiceChannelRepository.save(configBuilder.build());

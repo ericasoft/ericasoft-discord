@@ -5,6 +5,8 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.shard.GatewayBootstrap;
 import discord4j.gateway.GatewayOptions;
 import discord4j.gateway.intent.Intent;
@@ -14,12 +16,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @EnableConfigurationProperties(DiscordProperties.class)
-public class BotService {
+public class BotService implements DisposableBean {
     private final DiscordProperties properties;
     @Getter
     private GatewayDiscordClient client;
@@ -60,8 +62,14 @@ public class BotService {
             throw new BeanCreationException("Discord client could not be created");
         }
 
+        client.updatePresence(ClientPresence.online()).block();
+
         if (intents.contains(Intent.GUILD_MEMBERS)) {
             initializeGuildMemberCache();
+        }
+
+        if (intents.contains(Intent.GUILD_VOICE_STATES)) {
+            initializeVoiceStateCache();
         }
     }
 
@@ -75,6 +83,20 @@ public class BotService {
         client
             .on(GuildCreateEvent.class)
             .flatMap(event -> client.requestMembers(event.getGuild().getId()))
+            .collectList()
+            .subscribe();
+    }
+
+    private void initializeVoiceStateCache() {
+        client
+            .getGuilds()
+            .flatMap(Guild::getVoiceStates)
+            .collectList()
+            .block();
+
+        client
+            .on(GuildCreateEvent.class)
+            .flatMap(event -> event.getGuild().getVoiceStates())
             .collectList()
             .subscribe();
     }
@@ -137,4 +159,11 @@ public class BotService {
         return Mono.empty();
     }
 
+    @Override
+    public void destroy() {
+        log.info("Shutting down - going invisible");
+        client.updatePresence(ClientPresence.invisible()).doOnError(log::error).block();
+        log.info("Shutting down - logging out");
+        client.logout().doOnError(log::error).block();
+    }
 }
